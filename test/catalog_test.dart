@@ -50,19 +50,23 @@ void main() {
     tester,
   ) async {
     final handle = tester.ensureSemantics();
-    addTearDown(handle.dispose);
-    await tester.pumpWidget(const LibraryApp());
-    await tester.pumpAndSettle();
-    await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
-    await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
-    await expectLater(tester, meetsGuideline(textContrastGuideline));
-    await tester.pumpWidget(const SizedBox.shrink());
-    await tester.pumpWidget(const LibraryApp(initialBooks: examples));
-    await tester.pumpAndSettle();
-    expect(find.byType(BookCard), findsNWidgets(2));
-    await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
-    await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
-    await expectLater(tester, meetsGuideline(textContrastGuideline));
+    try {
+      await tester.pumpWidget(const LibraryApp());
+      await tester.pumpAndSettle();
+      await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
+      await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
+      await expectLater(tester, meetsGuideline(textContrastGuideline));
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pumpWidget(const LibraryApp(initialBooks: examples));
+      await tester.pumpAndSettle();
+      expect(find.byType(BookCard), findsNWidgets(2));
+      await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
+      await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
+      await expectLater(tester, meetsGuideline(textContrastGuideline));
+    } finally {
+      // Libera antes da verificação de recursos ao término do teste.
+      handle.dispose();
+    }
   });
 
   testWidgets('coleção vazia tem mensagem e ação útil', (tester) async {
