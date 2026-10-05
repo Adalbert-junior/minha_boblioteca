@@ -1,0 +1,86 @@
+name: M1 - verificar e gerar PDF
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.35.5'
+          channel: stable
+          cache: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Preparar dependências
+        run: |
+          mkdir -p evidence deliverables
+          flutter --version --machine > evidence/versions.json
+          flutter pub get
+          python -m pip install reportlab pillow pypdf
+          chmod +x android/gradlew
+      - name: Formatação e análise
+        shell: bash
+        run: |
+          set -o pipefail
+          dart format --output=none --set-exit-if-changed lib test | tee evidence/format.txt
+          flutter analyze | tee evidence/analyze.txt
+          touch evidence/analyze.ok
+      - name: Testes e capturas da interface Flutter
+        shell: bash
+        run: |
+          set -o pipefail
+          flutter test --concurrency=1 --reporter expanded | tee evidence/test.txt
+          touch evidence/test.ok
+      - name: Compilar Android
+        shell: bash
+        run: |
+          set -o pipefail
+          flutter build apk --release | tee evidence/build.txt
+          cp build/app/outputs/flutter-apk/app-release.apk deliverables/
+          sha256sum deliverables/app-release.apk > evidence/apk-sha256.txt
+          touch evidence/build.ok
+      - name: Instalar e abrir o APK no emulador Android
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 29
+          arch: x86_64
+          disable-animations: true
+          script: |
+            adb install -r deliverables/app-release.apk > evidence/android.txt
+            adb shell am start -W -n br.edu.adalbert.minha_biblioteca/.MainActivity >> evidence/android.txt
+            sleep 5
+            adb shell dumpsys activity activities > evidence/android-activity.txt
+            grep -E 'mResumedActivity.*br.edu.adalbert.minha_biblioteca|topResumedActivity.*br.edu.adalbert.minha_biblioteca' evidence/android-activity.txt >> evidence/android.txt
+            adb exec-out screencap -p > evidence/android.png
+            touch evidence/android.ok
+      - name: Gerar PDF com o commit desta execução
+        env:
+          STUDENT_NAME: Adalbert Raczkovi Junior
+          STUDENT_ID: '0015660'
+        run: python tools/report.py --verified
+      - name: Disponibilizar PDF, APK e registros
+        uses: actions/upload-artifact@v4
+        with:
+          name: M1-entrega-0015660
+          path: |
+            deliverables/
+            evidence/
+          if-no-files-found: error
+      - name: Disponibilizar registros em caso de falha
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: M1-diagnostico
+          path: evidence/

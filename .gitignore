@@ -1,0 +1,13 @@
+.dart_tool/
+.flutter-plugins-dependencies
+.packages
+build/
+.idea/
+*.iml
+android/local.properties
+android/.gradle/
+android/captures/
+evidence/
+deliverables/
+*.apk
+__pycache__/
