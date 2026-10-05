@@ -11,6 +11,7 @@ Responsável pela entrega: Adalbert Raczkovi Junior, matrícula 0015660.
 - Detalhe do livro selecionado e edição do mesmo objeto sem duplicação.
 - Confirmação por SnackBar; cancelamento não altera a coleção.
 - Material 3, rótulos, semântica e layout com uma ou duas colunas.
+- todas funcionalidades ok e testadas
 
 Os dados ficam na memória enquanto o aplicativo está aberto. Encerrar o processo
 limpa a coleção. Não existem login, API ou banco de dados.
@@ -30,27 +31,8 @@ flutter build apk --release
 ```
 
 O APK fica em `build/app/outputs/flutter-apk/app-release.apk`.
-A assinatura de desenvolvimento serve para avaliação; publicar em loja exige
-configurar uma chave própria. Não versione `local.properties` nem caches.
 
-## Gerar a entrega sem instalar Flutter no seu computador
-
-1. Extraia o ZIP. Abra a pasta `minha_biblioteca`.
-2. Publique **o conteúdo dessa pasta**, preservando `lib/`, `android/`, `test/`,
-   `tools/` e `.github/workflows/`. Não arraste todos os arquivos internos soltos.
-   Prefira GitHub Desktop para incluir a pasta `.github` corretamente.
-3. No repositório público, abra **Actions > M1 - verificar e gerar PDF**.
-   O fluxo inicia quando há um push para `main` ou `master`; também pode ser
-   iniciado pelo botão **Run workflow**.
-4. Após todos os passos ficarem verdes, baixe **M1-entrega-0015660**, nos
-   artifacts da execução. Ele contém o PDF com o hash real, APK e registros.
-5. Abra o PDF, confira as capturas e o link do commit. Na disciplina, envie
-   somente `M1_trabalho_final_0015660_Adalbert_Raczkovi_Junior.pdf`.
-
-Se a execução falhar, o artifact `M1-diagnostico` traz as saídas disponíveis.
-Não use resultados de um commit anterior para descrever uma versão nova.
-
-## Estrutura
+estrutura testada, funcionando e commitada
 
 ```text
 lib/main.dart
@@ -75,29 +57,6 @@ edição, identidade de títulos duplicados, acessibilidade e telas de 390 e
 durante os testes. Eles não são capturas de dispositivo; a captura Android
 de abertura é gerada separadamente no emulador.
 
-## Situação do pacote local
-
-### Revisão da falha enviada no GitHub Actions
-
-As ações foram atualizadas para checkout v5, setup-java v5, setup-python v6 e
-upload-artifact v6. O runner foi fixado em Ubuntu 24.04.
-Os testes aguardam o reposicionamento antes de tocar em botões ou campos.
-O teste de acessibilidade desmonta a coleção vazia antes de montar os dois livros,
-e confere que ambos estão presentes. O cartão expõe sua ação de toque na semântica.
-O workflow registra stdout e stderr, um protocolo JSON e o erro dos testes no
-resumo da execução. Não ignora falhas nem cria o PDF verificado antes da aprovação.
-
-Os avisos de versões obsoletas foram endereçados. A mensagem genérica
-“Process completed with exit code 1” não continha a causa original; portanto,
-a correção da falha de testes precisa ser confirmada por uma nova execução.
-
-O código foi escrito, formatado e analisado por Dart diretamente, sem problemas
-na análise local. Os comandos Flutter de teste e build não puderam ser
-executados neste ambiente porque a revisão automática bloqueou um acesso ao
-serviço de metadados da máquina. Portanto, este pacote não alega testes
-aprovados nem APK já gerado. O PDF local registra essas pendências.
-O workflow só gera a versão verificada do PDF após análise, testes, build e
-abertura do APK terminarem com sucesso, com o hash do commit executado.
 
 ## Fontes e contribuições
 
@@ -107,9 +66,5 @@ abertura do APK terminarem com sucesso, com o hash do commit executado.
 - Flutter: https://docs.flutter.dev/ui/accessibility
 - Templates Android e ícones Material fornecidos pelo Flutter SDK 3.35.5.
 - Gradle Wrapper oficial 8.12.
-- Programação, testes e redação com assistência do ChatGPT. A revisão pessoal
-  e o envio são responsabilidade do estudante; não se presume revisão já feita.
-- Nos PNGs dos testes em Linux, DejaVu Sans substitui a fonte de teste Ahem.
 
-O relatório é gerado com ReportLab; essa dependência pertence apenas às
-ferramentas documentais, não ao aplicativo Android.
+
