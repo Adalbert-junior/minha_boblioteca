@@ -77,6 +77,20 @@ de abertura é gerada separadamente no emulador.
 
 ## Situação do pacote local
 
+### Revisão da falha enviada no GitHub Actions
+
+As ações foram atualizadas para checkout v5, setup-java v5, setup-python v6 e
+upload-artifact v6. O runner foi fixado em Ubuntu 24.04.
+Os testes aguardam o reposicionamento antes de tocar em botões ou campos.
+O teste de acessibilidade desmonta a coleção vazia antes de montar os dois livros,
+e confere que ambos estão presentes. O cartão expõe sua ação de toque na semântica.
+O workflow registra stdout e stderr, um protocolo JSON e o erro dos testes no
+resumo da execução. Não ignora falhas nem cria o PDF verificado antes da aprovação.
+
+Os avisos de versões obsoletas foram endereçados. A mensagem genérica
+“Process completed with exit code 1” não continha a causa original; portanto,
+a correção da falha de testes precisa ser confirmada por uma nova execução.
+
 O código foi escrito, formatado e analisado por Dart diretamente, sem problemas
 na análise local. Os comandos Flutter de teste e build não puderam ser
 executados neste ambiente porque a revisão automática bloqueou um acesso ao

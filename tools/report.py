@@ -62,7 +62,7 @@ class Report:
         self.name = os.getenv('STUDENT_NAME', 'Adalbert Raczkovi Junior')
         self.student_id = os.getenv('STUDENT_ID', '0015660')
         self.sha = os.getenv('GITHUB_SHA', local_hash())
-        self.repo = os.getenv('GITHUB_REPOSITORY', 'Adalbert-junior/Minha_Biblioteca_GitHub')
+        self.repo = os.getenv('GITHUB_REPOSITORY', 'Adalbert-junior/minha_boblioteca')
         self.url = 'https://github.com/' + self.repo
         self.run_url = self.url + '/actions/runs/' + os.getenv('GITHUB_RUN_ID', '')
         self.versions = {}
@@ -219,7 +219,7 @@ class Report:
                    f"{self.versions.get('dartSdkVersion', '?')}" if self.verified else
                    'Ambiente previsto: Flutter 3.35.5 / Dart 3.9.2 / Java 17. Não houve execução Flutter válida.')
         y = self.para(version, y, size=8.7, leading=13)
-        y = self.code('git clone '+self.url+'\ncd Minha_Biblioteca_GitHub\n'
+        y = self.code('git clone '+self.url+'\ncd minha_boblioteca\n'
                       'git checkout '+self.sha+'\nflutter pub get\nflutter analyze\n'
                       'flutter test --concurrency=1\nflutter run\nflutter build apk --release', y)
         if not self.verified:
@@ -360,12 +360,13 @@ class Report:
                       'atualizá-los, sem repetir a composição do cartão.', y, size=9)
         y = self.heading('Análise, testes e build - registros da versão', y)
         if self.verified:
-            for title, name, count in [('Formatação e análise', 'analyze.txt', 3),
-                                        ('Suíte completa de testes', 'test.txt', 4),
-                                        ('Build Android', 'build.txt', 4),
-                                        ('Instalação e abertura no Android API 29', 'android.txt', 5)]:
+            for title, name, count in [('Formatação e análise', 'analyze.txt', 2),
+                                        ('Suíte completa de testes', 'test.txt', 1),
+                                        ('Build Android', 'build.txt', 2),
+                                        ('Instalação e abertura no Android API 29', 'android.txt', 3)]:
                 y = self.para('<b>'+title+'</b>', y, size=9, leading=12)
-                y = self.code(log_tail(name, count), y)
+                excerpt = '\n'.join(line[:88] for line in log_tail(name, count).splitlines())
+                y = self.code(excerpt, y)
             p = OUT/'app-release.apk'
             digest = hashlib.sha256(p.read_bytes()).hexdigest()
             y = self.para('APK: app-release.apk, '+f'{p.stat().st_size/1048576:.1f} MiB.'

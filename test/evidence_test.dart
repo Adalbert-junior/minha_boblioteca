@@ -6,7 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:minha_biblioteca/main.dart';
 import 'package:minha_biblioteca/widgets/book_card.dart';
-import 'catalog_test.dart' show examples, save;
+import 'catalog_test.dart' show examples, save, press, enter;
 
 const boundaryKey = Key('captureBoundary');
 
@@ -49,7 +49,7 @@ void main() {
         const RepaintBoundary(key: boundaryKey, child: LibraryApp()),
       );
       await capture(tester, '01_vazio');
-      await tester.tap(find.text('Adicionar primeiro livro'));
+      await press(tester, find.text('Adicionar primeiro livro'));
       await tester.pumpAndSettle();
       await save(tester);
       expect(find.text('Informe o título'), findsOneWidget);
@@ -60,31 +60,22 @@ void main() {
       );
       await tester.pumpAndSettle();
       await capture(tester, '02_validacao');
-      await tester.enterText(
-        find.byKey(const Key('titleField')),
-        'Dom Casmurro',
-      );
-      await tester.enterText(
-        find.byKey(const Key('authorField')),
-        'Machado de Assis',
-      );
-      await tester.enterText(
-        find.byKey(const Key('notesField')),
-        'Leitura para as férias.',
-      );
+      await enter(tester, 'titleField', 'Dom Casmurro');
+      await enter(tester, 'authorField', 'Machado de Assis');
+      await enter(tester, 'notesField', 'Leitura para as férias.');
       await save(tester);
       expect(find.byType(BookCard), findsOneWidget);
       await capture(tester, '03_criacao');
-      await tester.tap(find.text('Dom Casmurro'));
+      await press(tester, find.text('Dom Casmurro'));
       await tester.pumpAndSettle();
       expect(find.text('Autoria: Machado de Assis'), findsOneWidget);
       await capture(tester, '04_detalhe');
-      await tester.tap(find.text('Editar livro'));
+      await press(tester, find.text('Editar livro'));
       await tester.pumpAndSettle();
       await capture(tester, '05_editar');
-      await tester.tap(find.byKey(const Key('statusField')));
+      await press(tester, find.byKey(const Key('statusField')));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Lido').last);
+      await press(tester, find.text('Lido').last);
       await tester.pumpAndSettle();
       await save(tester);
       expect(find.byType(BookCard), findsOneWidget);

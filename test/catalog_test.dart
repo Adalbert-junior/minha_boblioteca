@@ -20,8 +20,28 @@ const examples = [
 ];
 
 Future<void> save(WidgetTester tester) async {
-  await tester.ensureVisible(find.byKey(const Key('saveButton')));
-  await tester.tap(find.byKey(const Key('saveButton')));
+  await settleForm(tester);
+  await press(tester, find.byKey(const Key('saveButton')));
+}
+
+Future<void> press(WidgetTester tester, Finder target) async {
+  await tester.ensureVisible(target);
+  await tester.pumpAndSettle();
+  await tester.tap(target);
+  await tester.pumpAndSettle();
+}
+
+Future<void> enter(WidgetTester tester, String field, String text) async {
+  final target = find.byKey(Key(field));
+  await tester.ensureVisible(target);
+  await tester.pumpAndSettle();
+  await tester.enterText(target, text);
+  await tester.pumpAndSettle();
+}
+
+Future<void> settleForm(WidgetTester tester) async {
+  FocusManager.instance.primaryFocus?.unfocus();
+  tester.testTextInput.hide();
   await tester.pumpAndSettle();
 }
 
@@ -32,11 +52,14 @@ void main() {
     final handle = tester.ensureSemantics();
     addTearDown(handle.dispose);
     await tester.pumpWidget(const LibraryApp());
+    await tester.pumpAndSettle();
     await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
     await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
     await expectLater(tester, meetsGuideline(textContrastGuideline));
+    await tester.pumpWidget(const SizedBox.shrink());
     await tester.pumpWidget(const LibraryApp(initialBooks: examples));
     await tester.pumpAndSettle();
+    expect(find.byType(BookCard), findsNWidgets(2));
     await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
     await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
     await expectLater(tester, meetsGuideline(textContrastGuideline));
@@ -46,7 +69,7 @@ void main() {
     await tester.pumpWidget(const LibraryApp());
     expect(find.text('Nenhum livro cadastrado'), findsOneWidget);
     expect(find.byType(BookCard), findsNothing);
-    await tester.tap(find.text('Adicionar primeiro livro'));
+    await press(tester, find.text('Adicionar primeiro livro'));
     await tester.pumpAndSettle();
     expect(find.text('Novo livro'), findsOneWidget);
   });
@@ -55,15 +78,16 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(const LibraryApp());
-    await tester.tap(find.text('Adicionar primeiro livro'));
+    await press(tester, find.text('Adicionar primeiro livro'));
     await tester.pumpAndSettle();
-    await tester.enterText(find.byKey(const Key('titleField')), '   ');
+    await enter(tester, 'titleField', '   ');
     await save(tester);
     expect(find.text('Informe o título'), findsOneWidget);
     expect(find.text('Informe a autoria'), findsOneWidget);
     expect(find.text('Novo livro'), findsOneWidget);
     await tester.ensureVisible(find.text('Cancelar'));
-    await tester.tap(find.text('Cancelar'));
+    await tester.pumpAndSettle();
+    await press(tester, find.text('Cancelar'));
     await tester.pumpAndSettle();
     expect(find.text('Nenhum livro cadastrado'), findsOneWidget);
   });
@@ -72,31 +96,22 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(const LibraryApp());
-    await tester.tap(find.text('Adicionar primeiro livro'));
+    await press(tester, find.text('Adicionar primeiro livro'));
     await tester.pumpAndSettle();
-    await tester.enterText(
-      find.byKey(const Key('titleField')),
-      '  Dom Casmurro  ',
-    );
-    await tester.enterText(
-      find.byKey(const Key('authorField')),
-      'Machado de Assis',
-    );
+    await enter(tester, 'titleField', '  Dom Casmurro  ');
+    await enter(tester, 'authorField', 'Machado de Assis');
     await save(tester);
     expect(find.byType(BookCard), findsOneWidget);
     expect(find.text('Livro cadastrado'), findsOneWidget);
-    await tester.tap(find.text('Dom Casmurro'));
+    await press(tester, find.text('Dom Casmurro'));
     await tester.pumpAndSettle();
     expect(find.text('Autoria: Machado de Assis'), findsOneWidget);
-    await tester.tap(find.text('Editar livro'));
+    await press(tester, find.text('Editar livro'));
     await tester.pumpAndSettle();
-    await tester.enterText(
-      find.byKey(const Key('titleField')),
-      'Dom Casmurro - relido',
-    );
-    await tester.tap(find.byKey(const Key('statusField')));
+    await enter(tester, 'titleField', 'Dom Casmurro - relido');
+    await press(tester, find.byKey(const Key('statusField')));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Lido').last);
+    await press(tester, find.text('Lido').last);
     await tester.pumpAndSettle();
     await save(tester);
     expect(find.byType(BookCard), findsOneWidget);
@@ -126,14 +141,11 @@ void main() {
         ],
       ),
     );
-    await tester.tap(find.byType(BookCard).last);
+    await press(tester, find.byType(BookCard).last);
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Editar livro'));
+    await press(tester, find.text('Editar livro'));
     await tester.pumpAndSettle();
-    await tester.enterText(
-      find.byKey(const Key('titleField')),
-      'Segundo livro editado',
-    );
+    await enter(tester, 'titleField', 'Segundo livro editado');
     await save(tester);
     expect(find.text('Mesmo título'), findsOneWidget);
     expect(find.text('Segundo livro editado'), findsOneWidget);
@@ -155,11 +167,12 @@ void main() {
           await tester.pumpWidget(const LibraryApp(initialBooks: examples));
           await tester.pumpAndSettle();
           expect(tester.takeException(), isNull);
-          await tester.tap(find.text('Dom Casmurro'));
+          await press(tester, find.text('Dom Casmurro'));
           await tester.pumpAndSettle();
           expect(tester.takeException(), isNull);
           await tester.ensureVisible(find.text('Editar livro'));
-          await tester.tap(find.text('Editar livro'));
+          await tester.pumpAndSettle();
+          await press(tester, find.text('Editar livro'));
           await tester.pumpAndSettle();
           expect(tester.takeException(), isNull);
           await save(tester);

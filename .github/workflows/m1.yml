@@ -7,11 +7,11 @@ permissions:
   contents: read
 jobs:
   verificar:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
@@ -20,7 +20,7 @@ jobs:
           flutter-version: '3.35.5'
           channel: stable
           cache: true
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
       - name: Preparar dependências
@@ -35,19 +35,23 @@ jobs:
         run: |
           set -o pipefail
           dart format --output=none --set-exit-if-changed lib test | tee evidence/format.txt
-          flutter analyze | tee evidence/analyze.txt
+          flutter analyze 2>&1 | tee evidence/analyze.txt
           touch evidence/analyze.ok
       - name: Testes e capturas da interface Flutter
+        id: tests
         shell: bash
         run: |
           set -o pipefail
-          flutter test --concurrency=1 --reporter expanded | tee evidence/test.txt
+          flutter test --concurrency=1 --reporter expanded --file-reporter json:evidence/tests.json 2>&1 | tee evidence/test.txt
           touch evidence/test.ok
+      - name: Explicar falhas dos testes no resumo da execução
+        if: always() && (steps.tests.outcome == 'success' || steps.tests.outcome == 'failure')
+        run: python tools/summarize_tests.py
       - name: Compilar Android
         shell: bash
         run: |
           set -o pipefail
-          flutter build apk --release | tee evidence/build.txt
+          flutter build apk --release 2>&1 | tee evidence/build.txt
           cp build/app/outputs/flutter-apk/app-release.apk deliverables/
           sha256sum deliverables/app-release.apk > evidence/apk-sha256.txt
           touch evidence/build.ok
@@ -71,7 +75,7 @@ jobs:
           STUDENT_ID: '0015660'
         run: python tools/report.py --verified
       - name: Disponibilizar PDF, APK e registros
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: M1-entrega-0015660
           path: |
@@ -80,7 +84,7 @@ jobs:
           if-no-files-found: error
       - name: Disponibilizar registros em caso de falha
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: M1-diagnostico
           path: evidence/

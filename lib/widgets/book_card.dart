@@ -13,11 +13,13 @@ class BookCard extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: Semantics(
         button: true,
+        onTap: onTap,
         label:
             'Abrir detalhes de ${book.title}, ${book.author}, ${book.status.label}',
         excludeSemantics: true,
         child: InkWell(
           onTap: onTap,
+          excludeFromSemantics: true,
           child: Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
